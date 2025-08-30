@@ -1,11 +1,10 @@
-
 import { useContext } from "react";
 import { Navigate, useLocation } from "react-router";
 import { AuthContext } from "./AuthProvider";
 
 
-const PrivateRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+const CharityRoute = ({ children }) => {
+  const { user, dbUser, loading } = useContext(AuthContext);
   const location = useLocation();
 
   if (loading) {
@@ -17,11 +16,14 @@ const PrivateRoute = ({ children }) => {
   }
 
   if (!user) {
-    // not logged in → redirect to login with "from" info
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (dbUser?.role !== "charity") {
+    return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
-export default PrivateRoute;
+export default CharityRoute;

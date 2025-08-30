@@ -3,10 +3,16 @@ import { Link, Outlet } from 'react-router';
 import { AuthContext } from '../provider/AuthProvider';
 import PlateShareLogo from '../pages/shared/PlateShareLogo ';
 
-import { FaCreditCard, FaHandsHelping, FaStar, FaUser } from 'react-icons/fa';
+import { FaCreditCard, FaHandsHelping, FaHeart, FaStar, FaUser , FaUserShield, 
+  FaUserCircle, 
+  FaHandHoldingUsd, 
+  FaUsers, 
+  FaUserCheck, 
+  FaClipboardList, FaBox, FaHandHoldingHeart
+   } from 'react-icons/fa';
 
 const DashboardLayout = () => {
-  const { dbUser } = useContext(AuthContext);
+  const { User ,dbUser } = useContext(AuthContext);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -60,21 +66,85 @@ const DashboardLayout = () => {
           </div>
           {dbUser && dbUser.role === "user" && (
             <>
-              <li className="flex items-center gap-2">
-                <FaUser className="w-5 h-5" />
-                <Link to="/dashboard/my-profile">My Profile</Link>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/my-profile"> <FaUser></FaUser>My Profile</Link>
               </li>
-              <li className="flex items-center gap-2">
-                <FaCreditCard className="w-5 h-5" />
-                <Link to="/dashboard/transaction-history">Transaction History</Link>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/request-charity-role"> <FaHandsHelping></FaHandsHelping>Request Charity Role</Link>
               </li>
-              <li className="flex items-center gap-2">
-                <FaStar className="w-5 h-5" />
-                <Link to="/dashboard/my-reviews">My Reviews</Link>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/favorites"><FaHeart></FaHeart>Favorites</Link>
               </li>
-              <li className="flex items-center gap-2">
-                <FaHandsHelping className="w-5 h-5" />
-                <Link to="/dashboard/request-charity-role">Request Charity Role</Link>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/transaction-history"> <FaCreditCard></FaCreditCard>Transaction History</Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/my-reviews"> <FaStar></FaStar>My Reviews</Link>
+              </li>
+             
+          
+            </>
+          )}
+          {dbUser && dbUser.role === "admin" && (
+            <>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/make-admin">
+                  <FaUserShield className="text-blue-600" /> Make Admin
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/admin-profile">
+                  <FaUserCircle className="text-green-600" /> Admin Profile
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/manage-donations">
+                  <FaHandHoldingUsd className="text-purple-600" /> Manage Donations
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/manage-users">
+                  <FaUsers className="text-orange-600" /> Manage Users
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/manage-role-requests">
+                  <FaUserCheck className="text-pink-600" /> Manage Role Requests
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/manage-requests">
+                  <FaClipboardList className="text-indigo-600" /> Manage Requests
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/feature-donations">
+                  <FaStar className="text-yellow-500" /> Feature Donations
+                </Link>
+              </li>
+            </>
+          )}
+          {dbUser && dbUser.role === "charity" && (
+            <>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/charity-profile">
+                  <FaUserCircle className="text-green-600" /> Charity Profile
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/my-requests">
+                  <FaClipboardList className="text-purple-600" /> My Requests
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/my-pickups">
+                  <FaBox className="text-orange-600" /> My Pickups
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/received-donations">
+                  <FaHandHoldingHeart className="text-red-600" /> Received Donations
+                </Link>
               </li>
             </>
           )}

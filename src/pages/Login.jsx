@@ -1,23 +1,30 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useLocation, Navigate } from 'react-router';
 import { FcGoogle } from 'react-icons/fc';
 import { FaUtensils } from 'react-icons/fa';
 import { AuthContext } from '../provider/AuthProvider';
 import PlateShareLogo from './shared/PlateShareLogo ';
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { googleLogin, emailLogin, loading } = useContext(AuthContext);
+  const location = useLocation();
+  const { googleLogin, emailLogin, loading, user } = useContext(AuthContext);
+
+  // ✅ Prevent logged-in users from staying on /login
+  if (user) {
+    return <Navigate to={location.state?.from?.pathname || "/"} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
       await emailLogin(email, password);
-      navigate('/');
+      navigate(location.state?.from?.pathname || "/");
     } catch (err) {
       setError(err.message);
     }
@@ -26,7 +33,7 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     try {
       await googleLogin();
-      navigate('/');
+      navigate(location.state?.from?.pathname || "/");
     } catch (err) {
       setError(err.message);
     }
@@ -39,11 +46,10 @@ const Login = () => {
         <div className="text-center lg:text-left max-w-lg">
           <h1 className="text-3xl font-bold flex items-center justify-center lg:justify-start gap-2">
             <FaUtensils className="text-green-600" />
-            Login to <PlateShareLogo></PlateShareLogo>
+            Login to <PlateShareLogo />
           </h1>
           <p className="py-6 text-lg">
-            Welcome to <span className="font-semibold">PlateShare</span> – 
-            the platform where restaurants donate surplus food, charities receive meals, 
+            Welcome to <span className="font-semibold">PlateShare</span> – the platform where restaurants donate surplus food, charities receive meals,
             and communities come together to fight hunger and reduce food waste.
           </p>
           <ul className="space-y-2 text-left">
@@ -71,19 +77,6 @@ const Login = () => {
           <div className="card-body">
             {error && (
               <div className="alert alert-error">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="stroke-current shrink-0 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
                 <span>{error}</span>
               </div>
             )}
@@ -140,14 +133,14 @@ const Login = () => {
             </button>
             <div className="text-center mt-4">
               <span className="text-sm">New to PlateShare? </span>
-             <Link to="/register" className="link link-success text-sm">
-               Create account
-             </Link>
-           </div>
-         </div>
-       </div>
-     </div>
-   </div>
+              <Link to="/register" className="link link-success text-sm">
+                Create account
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

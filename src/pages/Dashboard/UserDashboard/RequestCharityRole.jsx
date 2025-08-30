@@ -1,8 +1,11 @@
+
 import React, { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../provider/AuthProvider";
+
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import toast from "react-hot-toast";
-import useAxiosSecure from "../../hooks/useAxiosSecure";
+
+import { AuthContext } from "../../../provider/AuthProvider";
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const RequestCharityRole = () => {
   const { user } = useContext(AuthContext);
@@ -14,19 +17,26 @@ const RequestCharityRole = () => {
   const [mission, setMission] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [cardComplete, setCardComplete] = useState(false);
 
-  // Check for existing pending/approved request
+  // ✅ Check for existing pending/approved request
   useEffect(() => {
     if (!user?.email) return;
+
     axiosSecure
-      .get(`/charity-requests?email=${user.email}`)
-      .then(res => {
-        const existing = res.data.find(
-          r => r.status === "Pending" || r.status === "Approved"
-        );
-        if (existing) setHasPendingRequest(true);
+      .get(`/role-requests/status?email=${encodeURIComponent(user.email)}`)
+      .then((res) => {
+        console.log("status response:", res.data); // 👀 Debug log
+        const status = res.data?.status;
+        if (status === "Pending" || status === "Approved") {
+          setHasPendingRequest(true);
+        } else {
+          setHasPendingRequest(false); // ✅ allow fresh requests
+        }
       })
-      .catch(err => console.error(err));
+      .catch((err) => {
+        console.error("status check failed", err);
+      });
   }, [user?.email, axiosSecure]);
 
   const handleSubmit = async (e) => {
@@ -39,54 +49,61 @@ const RequestCharityRole = () => {
     }
 
     setLoading(true);
-
     try {
-      // 1️⃣ Create Payment Intent via secure axios
-      const { data: clientSecret } = await axiosSecure.post("/create-payment-intent", {
-        amount: 2500, // $25 in cents
+      // 1) Create PaymentIntent
+      const { data } = await axiosSecure.post("/create-payment-intent", {
+        amount: 2500, // $25 -> cents
+        email: user.email,
+        purpose: "Charity Role Request",
       });
+      const clientSecret = data.clientSecret;
+      if (!clientSecret) throw new Error("No client secret returned from server");
 
-      // 2️⃣ Confirm Card Payment
+      // 2) Confirm payment
       const card = elements.getElement(CardElement);
       const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card,
           billing_details: {
-            name: user.displayName,
+            name: user.displayName || "Anonymous",
             email: user.email,
           },
         },
       });
 
       if (error) throw error;
+      if (paymentIntent.status !== "succeeded") {
+        throw new Error("Payment failed to complete.");
+      }
 
-      // 3️⃣ Save role request
-      const requestData = {
-        userEmail: user.email,
-        userName: user.displayName,
+      // ✅ Optional: show quick toast for payment success
+      toast.success("💳 Payment successful!");
+
+      // 3) Save role request
+      await axiosSecure.post("/role-requests", {
+        email: user.email,
+        name: user.displayName,
         organization,
         mission,
+        amount: 25, // dollars
         transactionId: paymentIntent.id,
-        status: "Pending",
-        createdAt: new Date(),
-      };
+      });
 
-      await axiosSecure.post("/charity-requests", requestData);
-
-      // 4️⃣ Save transaction
+      // 4) Save transaction
       await axiosSecure.post("/transactions", {
         transactionId: paymentIntent.id,
-        userEmail: user.email,
+        email: user.email,
         amount: 25,
-        date: new Date(),
         purpose: "Charity Role Request",
       });
 
-      toast.success("Charity role request submitted successfully!");
+      // ✅ Final success toast after everything done
+      toast.success("🎉 Charity role request submitted successfully!");
+
+      // reset form
       setOrganization("");
       setMission("");
       setHasPendingRequest(true);
-
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Payment failed!");
@@ -98,6 +115,13 @@ const RequestCharityRole = () => {
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Request Charity Role</h2>
+
+      {hasPendingRequest && (
+        <div className="mb-4 p-3 rounded bg-yellow-100 text-yellow-800">
+          You already have a pending or approved request. You can’t submit another.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block font-medium">Full Name</label>
@@ -108,6 +132,7 @@ const RequestCharityRole = () => {
             className="input input-bordered w-full"
           />
         </div>
+
         <div>
           <label className="block font-medium">Email</label>
           <input
@@ -117,35 +142,49 @@ const RequestCharityRole = () => {
             className="input input-bordered w-full"
           />
         </div>
+
         <div>
           <label className="block font-medium">Organization Name</label>
           <input
             type="text"
             value={organization}
-            onChange={e => setOrganization(e.target.value)}
+            onChange={(e) => setOrganization(e.target.value)}
             className="input input-bordered w-full"
             required
           />
         </div>
+
         <div>
           <label className="block font-medium">Mission Statement</label>
           <textarea
             value={mission}
-            onChange={e => setMission(e.target.value)}
+            onChange={(e) => setMission(e.target.value)}
             className="textarea textarea-bordered w-full"
             required
           />
         </div>
+
         <div>
           <label className="block font-medium mb-2">Card Details</label>
           <div className="p-2 border rounded">
-            <CardElement />
+            <CardElement
+              onChange={(e) => setCardComplete(e.complete)}
+              options={{ hidePostalCode: true }}
+            />
           </div>
         </div>
+
         <button
           type="submit"
           className={`btn btn-green w-full mt-4 ${loading ? "loading" : ""}`}
-          disabled={!stripe || loading || hasPendingRequest}
+          disabled={
+            !stripe ||
+            !cardComplete ||
+            !organization ||
+            !mission ||
+            loading ||
+            hasPendingRequest
+          }
         >
           Pay $25 & Submit Request
         </button>
