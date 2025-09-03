@@ -1,23 +1,28 @@
-// useAxiosSecure.jsx
 import { useContext, useEffect } from "react";
-
 import axios from "axios";
 import { AuthContext } from "../provider/AuthProvider";
+import { getAuth } from "firebase/auth";
+
+const axiosSecure = axios.create({
+  baseURL: "http://localhost:3000",
+  headers: { "Content-Type": "application/json" },
+});
 
 const useAxiosSecure = () => {
-  const { user } = useContext(AuthContext); 
-  const axiosSecure = axios.create({
-    baseURL: "http://localhost:3000",
-    headers: { "Content-Type": "application/json" },
-  });
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const interceptor = axiosSecure.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem("access-token"); // always latest token
-        if (token) {
+      async (config) => {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (currentUser) {
+          
+          const token = await currentUser.getIdToken();
           config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
       },
       (error) => Promise.reject(error)

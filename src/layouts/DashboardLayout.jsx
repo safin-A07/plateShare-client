@@ -3,16 +3,19 @@ import { Link, Outlet } from 'react-router';
 import { AuthContext } from '../provider/AuthProvider';
 import PlateShareLogo from '../pages/shared/PlateShareLogo ';
 
-import { FaCreditCard, FaHandsHelping, FaHeart, FaStar, FaUser , FaUserShield, 
-  FaUserCircle, 
-  FaHandHoldingUsd, 
-  FaUsers, 
-  FaUserCheck, 
-  FaClipboardList, FaBox, FaHandHoldingHeart
-   } from 'react-icons/fa';
+import {
+  FaCreditCard, FaHandsHelping, FaHeart, FaStar, FaUser, FaUserShield,
+  FaUserCircle,
+  FaHandHoldingUsd,
+  FaUsers,
+  FaUserCheck,
+  FaClipboardList, FaBox, FaHandHoldingHeart,
+  FaPlusCircle,
+  FaGift
+} from 'react-icons/fa';
 
 const DashboardLayout = () => {
-  const { User ,dbUser } = useContext(AuthContext);
+  const { User, dbUser } = useContext(AuthContext);
 
   return (
     <div className="drawer lg:drawer-open">
@@ -81,8 +84,8 @@ const DashboardLayout = () => {
               <li className="flex items-left gap-2">
                 <Link to="/dashboard/my-reviews"> <FaStar></FaStar>My Reviews</Link>
               </li>
-             
-          
+
+
             </>
           )}
           {dbUser && dbUser.role === "admin" && (
@@ -148,6 +151,31 @@ const DashboardLayout = () => {
               </li>
             </>
           )}
+          {dbUser && dbUser.role === "restaurant" && (
+            <>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/restaurant-profile">
+                  <FaUserCircle className="text-blue-600" /> Restaurant Profile
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/add-donation">
+                  <FaPlusCircle className="text-green-600" /> Add Donation
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/my-donations">
+                  <FaGift className="text-purple-600" /> My Donations
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/requested-donations">
+                  <FaClipboardList className="text-orange-600" /> Requested Donations
+                </Link>
+              </li>
+            </>
+          )}
+
         </ul>
       </div>
     </div>

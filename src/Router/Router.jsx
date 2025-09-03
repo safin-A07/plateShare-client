@@ -24,6 +24,7 @@ import ReceivedDonations from "../pages/Dashboard/CharityDashboard/ReceivedDonat
 import MyRequests from "../pages/Dashboard/CharityDashboard/MyRequests";
 import MyPickups from "../pages/Dashboard/CharityDashboard/MyPickups";
 import CharityProfile from "../pages/Dashboard/CharityDashboard/CharityProfile";
+import AddDonation from "../pages/Dashboard/RestaurantDashboard/AddDonation";
 
 
 export const router = createBrowserRouter([
@@ -93,6 +94,11 @@ export const router = createBrowserRouter([
       {
         path :"my-pickups",
         element : <CharityRoute><MyPickups /></CharityRoute>
+     },
+     //restaurant router
+     {
+      path:"add-donation",
+      element : <AddDonation />
      }
     ]
   },
