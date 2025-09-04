@@ -13,7 +13,9 @@ const RestaurantRequestForm = () => {
     closingTime: "",
     foodType: "",
     imageUrl: "",
-    email: dbUser?.email || "",
+    phone: "",
+    restaurantEmail: "",
+    ownerEmail: dbUser?.email || "",
     status: "Pending",
     createdAt: new Date(),
   });
@@ -38,8 +40,9 @@ const RestaurantRequestForm = () => {
         closingTime: "",
         foodType: "",
         imageUrl: "",
-        email: "",
         phone: "",
+        restaurantEmail: "",
+        ownerEmail: dbUser?.email || "", // keep dbUser email
         status: "Pending",
         createdAt: new Date(),
       });
@@ -66,18 +69,32 @@ const RestaurantRequestForm = () => {
             required
           />
         </div>
-        {/* Restaurant email */}
+
+        {/* Owner Email (dbUser email, read-only) */}
         <div className="form-control">
-          <label className="label">Restaurant email</label>
+          <label className="label">Owner Email</label>
           <input
             type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="input input-bordered w-full"
+            value={formData.ownerEmail}
+            readOnly
+            className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
           />
         </div>
-        {/* Restaurant Phone number */}
+
+        {/* Restaurant Email (editable) */}
+        <div className="form-control">
+          <label className="label">Restaurant Email</label>
+          <input
+            type="email"
+            name="restaurantEmail"
+            value={formData.restaurantEmail}
+            onChange={handleChange}
+            className="input input-bordered w-full"
+            required
+          />
+        </div>
+
+        {/* Phone number */}
         <div className="form-control">
           <label className="label">Restaurant Phone number</label>
           <input
@@ -89,7 +106,7 @@ const RestaurantRequestForm = () => {
             required
           />
         </div>
-  
+
         {/* About */}
         <div className="form-control">
           <label className="label">About</label>
