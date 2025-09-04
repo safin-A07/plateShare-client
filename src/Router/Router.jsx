@@ -25,6 +25,8 @@ import MyRequests from "../pages/Dashboard/CharityDashboard/MyRequests";
 import MyPickups from "../pages/Dashboard/CharityDashboard/MyPickups";
 import CharityProfile from "../pages/Dashboard/CharityDashboard/CharityProfile";
 import AddDonation from "../pages/Dashboard/RestaurantDashboard/AddDonation";
+import RestaurantRequestForm from "../pages/Dashboard/UserDashboard/RestaurantRequestForm ";
+import AdminRestaurantRequests from "../pages/Dashboard/AdminDashboard/AdminRestaurantRequests";
 
 
 export const router = createBrowserRouter([
@@ -55,6 +57,10 @@ export const router = createBrowserRouter([
         element : <MyReviews />
       },
       {
+        path : "restaurant",
+        element : <RestaurantRequestForm  />
+      },
+      {
         path : "request-charity-role",
        element: (
           <Elements stripe={stripePromise}>
@@ -65,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path : "make-admin",
         element : <AdminRoute><MakeAdmin /></AdminRoute>
+      },
+      {
+        path : "admin-restaurant-requests",
+        element : <AdminRoute><AdminRestaurantRequests /></AdminRoute>
       },
       {
         path : "manage-role-requests",

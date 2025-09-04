@@ -11,7 +11,8 @@ import {
   FaUserCheck,
   FaClipboardList, FaBox, FaHandHoldingHeart,
   FaPlusCircle,
-  FaGift
+  FaGift,
+  FaUtensils
 } from 'react-icons/fa';
 
 const DashboardLayout = () => {
@@ -73,6 +74,11 @@ const DashboardLayout = () => {
                 <Link to="/dashboard/my-profile"> <FaUser></FaUser>My Profile</Link>
               </li>
               <li className="flex items-left gap-2">
+                <Link to="/dashboard/restaurant">
+                  <FaUtensils /> Restaurant
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
                 <Link to="/dashboard/request-charity-role"> <FaHandsHelping></FaHandsHelping>Request Charity Role</Link>
               </li>
               <li className="flex items-left gap-2">
@@ -101,7 +107,7 @@ const DashboardLayout = () => {
                 </Link>
               </li>
               <li className="flex items-left gap-2">
-                <Link to="/dashboard/manage-donations">
+                <Link to="/dashboard/admin-restaurant-requests">
                   <FaHandHoldingUsd className="text-purple-600" /> Manage Donations
                 </Link>
               </li>
