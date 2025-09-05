@@ -108,12 +108,17 @@ const DashboardLayout = () => {
               </li>
               <li className="flex items-left gap-2">
                 <Link to="/dashboard/admin-restaurant-requests">
-                  <FaHandHoldingUsd className="text-purple-600" /> Manage Donations
+                  <FaHandHoldingUsd className="text-purple-600" /> Manage Restaurant
                 </Link>
               </li>
               <li className="flex items-left gap-2">
                 <Link to="/dashboard/manage-users">
                   <FaUsers className="text-orange-600" /> Manage Users
+                </Link>
+              </li>
+              <li className="flex items-left gap-2">
+                <Link to="/dashboard/all-donations">
+                  <FaHandHoldingUsd className="text-green-600" /> Manage donations
                 </Link>
               </li>
               <li className="flex items-left gap-2">

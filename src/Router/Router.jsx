@@ -27,6 +27,9 @@ import CharityProfile from "../pages/Dashboard/CharityDashboard/CharityProfile";
 import AddDonation from "../pages/Dashboard/RestaurantDashboard/AddDonation";
 import RestaurantRequestForm from "../pages/Dashboard/UserDashboard/RestaurantRequestForm ";
 import AdminRestaurantRequests from "../pages/Dashboard/AdminDashboard/AdminRestaurantRequests";
+import RestaurantProfile from "../pages/Dashboard/RestaurantDashboard/RestaurantProfile";
+import MyDonations from "../pages/Dashboard/RestaurantDashboard/MyDonations";
+import AllDonations from "../pages/Dashboard/AdminDashboard/AllDonations";
 
 
 export const router = createBrowserRouter([
@@ -77,6 +80,10 @@ export const router = createBrowserRouter([
         element : <AdminRoute><AdminRestaurantRequests /></AdminRoute>
       },
       {
+        path : "all-donations",
+        element : <AllDonations />
+      },
+      {
         path : "manage-role-requests",
         element :<AdminRoute><ManageRoleRequests /></AdminRoute>
       },
@@ -109,6 +116,14 @@ export const router = createBrowserRouter([
      {
       path:"add-donation",
       element : <AddDonation />
+     },
+     {
+      path:"restaurant-profile",
+      element : <RestaurantProfile />
+     },
+     {
+      path:"my-donations",
+      element : <MyDonations />
      }
     ]
   },
