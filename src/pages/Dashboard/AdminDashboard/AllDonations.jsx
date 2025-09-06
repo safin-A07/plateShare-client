@@ -9,7 +9,7 @@ const AllDonations = () => {
   // Fetch all donations
   useEffect(() => {
     axiosSecure
-      .get("/donations")
+      .get("/donations/admin")
       .then((res) => setDonations(res.data))
       .catch((err) => console.error("❌ Error fetching donations:", err));
   }, [axiosSecure]);
