@@ -84,6 +84,7 @@ const DonationDetails = () => {
 
         {/* Donation Info */}
         <h2 className="text-3xl font-bold mb-2">{donation.title}</h2>
+        <h2 className="text-xl font-bold mb-2">{donation.restaurantEmail}</h2>
         <p className="text-gray-600 mb-2">
           {donation.foodType} • {donation.quantity} portions
         </p>
@@ -127,6 +128,12 @@ const DonationDetails = () => {
                         <input
                           type="text"
                           value={donation.title}
+                          readOnly
+                          className="input input-bordered w-full"
+                        />
+                        <input
+                          type="text"
+                          value={donation.restaurantEmail}
                           readOnly
                           className="input input-bordered w-full"
                         />
