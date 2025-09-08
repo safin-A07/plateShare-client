@@ -31,6 +31,7 @@ import RestaurantProfile from "../pages/Dashboard/RestaurantDashboard/Restaurant
 import MyDonations from "../pages/Dashboard/RestaurantDashboard/MyDonations";
 import AllDonations from "../pages/Dashboard/AdminDashboard/AllDonations";
 import DonationDetails from "../pages/DonationsDetails/DonationDetails";
+import RequestedDonation from "../pages/Dashboard/RestaurantDashboard/RequestedDonation";
 
 
 export const router = createBrowserRouter([
@@ -129,6 +130,10 @@ export const router = createBrowserRouter([
      {
       path:"my-donations",
       element : <MyDonations />
+     },
+     {
+      path:"requested-donations",
+      element : <RequestedDonation />
      }
     ]
   },

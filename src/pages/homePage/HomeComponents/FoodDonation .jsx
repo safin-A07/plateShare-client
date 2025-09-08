@@ -14,7 +14,7 @@ const FoodDonation = () => {
     axios
       .get(`${import.meta.env.VITE_API_URL}/donations`) // public API
       .then((res) => setDonations(res.data))
-      .catch((err) => console.error("❌ Error fetching donations:", err));
+      .catch((err) => console.error("Error fetching donations:", err));
   }, []);
 
   // Handle View Details
