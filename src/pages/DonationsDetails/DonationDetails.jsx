@@ -13,6 +13,8 @@ const DonationDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [request, setRequest] = useState(null); // ✅ Track current request
   const [loading, setLoading] = useState(true);
+  const [reviewDesc, setReviewDesc] = useState("");
+  const [reviewRating, setReviewRating] = useState("");
 
   useEffect(() => {
     axiosSecure
@@ -23,7 +25,7 @@ const DonationDetails = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error(" Error fetching donation:", err);
+        console.error("❌ Error fetching donation:", err);
         setLoading(false);
       });
   }, [id]);
@@ -78,6 +80,53 @@ const DonationDetails = () => {
     }
   };
 
+  const handleConfirmPickup = async (requestId) => {
+    try {
+      const res = await axiosSecure.patch(`/requests/${requestId}/pickup`);
+      Swal.fire("Success", "Donation marked as Picked Up", "success");
+
+      // update local request state
+      setRequest({ ...request, status: "Picked Up" });
+
+      // also update donation status locally
+      setDonation({ ...donation, status: "Picked Up" });
+
+    } catch (err) {
+      console.error("❌ Error confirming pickup:", err);
+      Swal.fire("Error", "Failed to confirm pickup", "error");
+    }
+  };
+
+  //  Submit review
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    const newReview = {
+      donationId: donation._id,
+      reviewerName: user?.displayName,
+      description: reviewDesc,
+      rating: Number(reviewRating),
+    };
+
+    try {
+      const res = await axiosSecure.post("/reviews", newReview);
+
+      // ✅ update reviews list locally
+      setReviews([...reviews, res.data]);
+
+      // reset form & close modal
+      setReviewDesc("");
+      setReviewRating("");
+      document.getElementById("reviewModal").checked = false;
+
+      Swal.fire("Success", "Review submitted successfully", "success");
+    } catch (err) {
+      console.error("❌ Error posting review:", err);
+      Swal.fire("Error", "Failed to submit review", "error");
+    }
+  };
+
+
   if (loading) return <p className="text-center">Loading...</p>;
   if (!donation) return <p className="text-center">Donation not found</p>;
 
@@ -107,13 +156,12 @@ const DonationDetails = () => {
         </p>
         <p className="text-gray-500 mb-2">Pickup Time: {donation.pickupTime}</p>
         <span
-          className={`inline-block mt-2 px-4 py-2 text-sm rounded-full font-medium ${
-            donation.status === "Available"
-              ? "bg-green-100 text-green-700"
-              : donation.status === "Picked Up"
+          className={`inline-block mt-2 px-4 py-2 text-sm rounded-full font-medium ${donation.status === "Available"
+            ? "bg-green-100 text-green-700"
+            : donation.status === "Picked Up"
               ? "bg-red-100 text-red-600"
               : "bg-yellow-100 text-yellow-600"
-          }`}
+            }`}
         >
           {donation.status}
         </span>
@@ -206,8 +254,13 @@ const DonationDetails = () => {
               )}
 
               {/* ✅ Confirm Pickup button if request is Accepted */}
-              {request?.status === "Accepted" && (
-                <button className="btn btn-warning">Confirm Pickup</button>
+              {request && request.status === "Accepted" && (
+                <button
+                  className="btn btn-warning"
+                  onClick={() => handleConfirmPickup(request._id)}
+                >
+                  Confirm Pickup
+                </button>
               )}
             </>
           )}
@@ -242,7 +295,7 @@ const DonationDetails = () => {
           <div className="modal">
             <div className="modal-box">
               <h3 className="font-bold text-lg">Add Review</h3>
-              <form className="mt-4 space-y-3">
+              <form className="mt-4 space-y-3" onSubmit={handleReviewSubmit} >
                 <input
                   type="text"
                   value={user?.displayName}
@@ -251,19 +304,23 @@ const DonationDetails = () => {
                 />
                 <textarea
                   placeholder="Write your review"
+                  value={reviewDesc}
+                  onChange={(e) => setReviewDesc(e.target.value)}
                   className="textarea textarea-bordered w-full"
-                ></textarea>
+                />
                 <input
                   type="number"
                   placeholder="Rating (1-5)"
                   min="1"
                   max="5"
+                  value={reviewRating}
+                  onChange={(e) => setReviewRating(e.target.value)}
                   className="input input-bordered w-full"
                 />
                 <div className="modal-action">
-                  <label htmlFor="reviewModal" className="btn btn-primary">
+                  <button type="submit" className="btn btn-primary">
                     Submit
-                  </label>
+                  </button>
                   <label htmlFor="reviewModal" className="btn">
                     Cancel
                   </label>
