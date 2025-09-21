@@ -11,7 +11,7 @@ const DonationDetails = () => {
   const { user, dbUser } = useContext(AuthContext);
   const [donation, setDonation] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [request, setRequest] = useState(null); // ✅ Track current request
+  const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviewDesc, setReviewDesc] = useState("");
   const [reviewRating, setReviewRating] = useState("");
@@ -28,7 +28,7 @@ const DonationDetails = () => {
         console.error("❌ Error fetching donation:", err);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, axiosSecure]);
 
   // ✅ Fetch charity's request for this donation
   useEffect(() => {
@@ -41,7 +41,7 @@ const DonationDetails = () => {
         })
         .catch((err) => console.error("❌ Error fetching requests:", err));
     }
-  }, [id, dbUser]);
+  }, [id, dbUser, axiosSecure]);
 
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +62,7 @@ const DonationDetails = () => {
 
     try {
       const res = await axiosSecure.post("/requests", requestData);
-      setRequest(res.data.result); // ✅ Save request in state
+      setRequest(res.data.result);
       Swal.fire({
         icon: "success",
         title: "Request Submitted!",
@@ -82,22 +82,59 @@ const DonationDetails = () => {
 
   const handleConfirmPickup = async (requestId) => {
     try {
-      const res = await axiosSecure.patch(`/requests/${requestId}/pickup`);
+      await axiosSecure.patch(`/requests/${requestId}/pickup`);
       Swal.fire("Success", "Donation marked as Picked Up", "success");
 
-      // update local request state
       setRequest({ ...request, status: "Picked Up" });
-
-      // also update donation status locally
       setDonation({ ...donation, status: "Picked Up" });
-
     } catch (err) {
       console.error("❌ Error confirming pickup:", err);
       Swal.fire("Error", "Failed to confirm pickup", "error");
     }
   };
 
-  //  Submit review
+  // ✅ Save to Favorites
+  const handleSaveFavorite = async () => {
+    try {
+      // ensure donationId is a string
+      const donationId = donation._id?.toString ? donation._id.toString() : donation._id;
+
+      const favoriteData = {
+        donationId,                 // reference to donation (string)
+        title: donation.title,
+        restaurantName: donation.restaurantName,
+        location: donation.location,
+        status: donation.status,
+        quantity: donation.quantity,
+        imageUrl: donation.imageUrl || null,
+        ownerEmail: user?.email,    // minimal identifier (you can use uid instead)
+        createdAt: new Date(),
+      };
+
+      const res = await axiosSecure.post("/favorites", favoriteData);
+
+      if (res.status === 201) {
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "This donation has been added to your favorites.",
+        });
+      } else {
+        Swal.fire("Info", res.data?.message || "Response received", "info");
+      }
+    } catch (err) {
+      // backend may return 409 for duplicates (handled below)
+      const msg = err?.response?.data?.error || "Failed to save favorite. Please try again.";
+      console.error("❌ Error saving favorite:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: msg,
+      });
+    }
+  };
+
+  // ✅ Submit review
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
@@ -110,11 +147,8 @@ const DonationDetails = () => {
 
     try {
       const res = await axiosSecure.post("/reviews", newReview);
-
-      // ✅ update reviews list locally
       setReviews([...reviews, res.data]);
 
-      // reset form & close modal
       setReviewDesc("");
       setReviewRating("");
       document.getElementById("reviewModal").checked = false;
@@ -125,7 +159,6 @@ const DonationDetails = () => {
       Swal.fire("Error", "Failed to submit review", "error");
     }
   };
-
 
   if (loading) return <p className="text-center">Loading...</p>;
   if (!donation) return <p className="text-center">Donation not found</p>;
@@ -168,101 +201,101 @@ const DonationDetails = () => {
 
         {/* Buttons */}
         <div className="mt-6 flex gap-4 flex-wrap">
-          <button className="btn btn-primary">Save to Favorites</button>
+          {/* ✅ Show Save button only for charity & user */}
+          {dbUser && (dbUser.role === "charity" || dbUser.role === "user") && (
+            <button
+              className="btn btn-primary"
+              onClick={() => handleSaveFavorite(donation._id)}
+            >
+              Save to Favorites
+            </button>
+          )}
 
-          {dbUser && dbUser.role === "charity" && (
+          {/* ✅ Request button only for charity */}
+          {dbUser && dbUser.role === "charity" && !request && donation.status === "Verified" && (
             <>
-              {/* ✅ Request button only if no request yet */}
-              {!request && donation.status === "Verified" && (
-                <>
-                  <label htmlFor="requestModal" className="btn btn-success">
-                    Request Donation
-                  </label>
+              <label htmlFor="requestModal" className="btn btn-success">
+                Request Donation
+              </label>
 
-                  {/* Request Donation Modal */}
-                  <input
-                    type="checkbox"
-                    id="requestModal"
-                    className="modal-toggle"
-                  />
-                  <div className="modal">
-                    <div className="modal-box">
-                      <h3 className="font-bold text-lg">Request Donation</h3>
-                      <form
-                        onSubmit={handleRequestSubmit}
-                        className="mt-4 space-y-3"
-                      >
-                        <input
-                          type="text"
-                          value={donation.title}
-                          readOnly
-                          className="input input-bordered w-full"
-                        />
-                        <input
-                          type="text"
-                          value={donation.restaurantEmail}
-                          readOnly
-                          className="input input-bordered w-full"
-                        />
-                        <input
-                          type="text"
-                          value={donation.restaurantName}
-                          readOnly
-                          className="input input-bordered w-full"
-                        />
-                        <input
-                          type="text"
-                          value={user?.displayName}
-                          readOnly
-                          className="input input-bordered w-full"
-                        />
-                        <input
-                          type="email"
-                          value={user?.email}
-                          readOnly
-                          className="input input-bordered w-full"
-                        />
-                        <textarea
-                          name="description"
-                          placeholder="Request description"
-                          className="textarea textarea-bordered w-full"
-                        ></textarea>
-                        <input
-                          type="text"
-                          name="quantity"
-                          placeholder="Quantity"
-                          className="input input-bordered w-full"
-                        />
-                        <input
-                          type="text"
-                          name="pickupTime"
-                          placeholder="Preferred pickup time"
-                          className="input input-bordered w-full"
-                        />
-                        <div className="modal-action">
-                          <button type="submit" className="btn btn-primary">
-                            Submit
-                          </button>
-                          <label htmlFor="requestModal" className="btn">
-                            Cancel
-                          </label>
-                        </div>
-                      </form>
+              {/* Request Modal */}
+              <input type="checkbox" id="requestModal" className="modal-toggle" />
+              <div className="modal">
+                <div className="modal-box">
+                  <h3 className="font-bold text-lg">Request Donation</h3>
+                  <form
+                    onSubmit={handleRequestSubmit}
+                    className="mt-4 space-y-3"
+                  >
+                    <input
+                      type="text"
+                      value={donation.title}
+                      readOnly
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="text"
+                      value={donation.restaurantEmail}
+                      readOnly
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="text"
+                      value={donation.restaurantName}
+                      readOnly
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="text"
+                      value={user?.displayName}
+                      readOnly
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="email"
+                      value={user?.email}
+                      readOnly
+                      className="input input-bordered w-full"
+                    />
+                    <textarea
+                      name="description"
+                      placeholder="Request description"
+                      className="textarea textarea-bordered w-full"
+                    ></textarea>
+                    <input
+                      type="text"
+                      name="quantity"
+                      placeholder="Quantity"
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="text"
+                      name="pickupTime"
+                      placeholder="Preferred pickup time"
+                      className="input input-bordered w-full"
+                    />
+                    <div className="modal-action">
+                      <button type="submit" className="btn btn-primary">
+                        Submit
+                      </button>
+                      <label htmlFor="requestModal" className="btn">
+                        Cancel
+                      </label>
                     </div>
-                  </div>
-                </>
-              )}
-
-              {/* ✅ Confirm Pickup button if request is Accepted */}
-              {request && request.status === "Accepted" && (
-                <button
-                  className="btn btn-warning"
-                  onClick={() => handleConfirmPickup(request._id)}
-                >
-                  Confirm Pickup
-                </button>
-              )}
+                  </form>
+                </div>
+              </div>
             </>
+          )}
+
+          {/* ✅ Confirm Pickup button if request is Accepted */}
+          {request && request.status === "Accepted" && (
+            <button
+              className="btn btn-warning"
+              onClick={() => handleConfirmPickup(request._id)}
+            >
+              Confirm Pickup
+            </button>
           )}
         </div>
 
@@ -295,7 +328,10 @@ const DonationDetails = () => {
           <div className="modal">
             <div className="modal-box">
               <h3 className="font-bold text-lg">Add Review</h3>
-              <form className="mt-4 space-y-3" onSubmit={handleReviewSubmit} >
+              <form
+                className="mt-4 space-y-3"
+                onSubmit={handleReviewSubmit}
+              >
                 <input
                   type="text"
                   value={user?.displayName}
