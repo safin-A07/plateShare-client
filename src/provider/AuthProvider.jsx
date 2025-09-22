@@ -87,7 +87,7 @@ const AuthProvider = ({ children }) => {
         try {
           const token = localStorage.getItem("access-token");
           const res = await axios.get(
-            `http://localhost:3000/users/${encodeURIComponent(user.email)}`,
+            `https://plate-share-server-omega.vercel.app/users/${encodeURIComponent(user.email)}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           setDbUser(res.data);

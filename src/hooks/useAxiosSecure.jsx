@@ -4,7 +4,7 @@ import { AuthContext } from "../provider/AuthProvider";
 import { getAuth } from "firebase/auth";
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://plate-share-server-omega.vercel.app",
   headers: { "Content-Type": "application/json" },
 });
 
